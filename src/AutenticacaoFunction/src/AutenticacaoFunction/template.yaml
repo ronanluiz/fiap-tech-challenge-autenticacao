@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Template para função Lambda .NET 8
+
+Resources:
+  AutenticacaoFunction:
+    Type: AWS::Serverless::Function    
+    Properties:
+      Handler: AutenticacaoFunction::AutenticacaoFunction.Function::FunctionHandler
+      Runtime: dotnet8
+      CodeUri: ./
+      MemorySize: 256
+      Timeout: 30
+      Environment:
+        Variables:
+          PARAM1: valor1
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /auth
+            Method: POST
