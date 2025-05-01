@@ -1,0 +1,38 @@
+name: Criação de Lambda de autenticação
+on:
+    push:
+      branches: [ develop ]   # Aceita push em qualquer branch
+    pull_request:
+
+env:
+  PROJECT_PATH: src/AutenticacaoFunction/src/AutenticacaoFunction/AutenticacaoFunction.csproj
+
+jobs:
+
+  build:
+    name: "Build da aplicação lambda de autenticação"
+    runs-on: ubuntu-latest
+    steps:            
+      - uses: actions/checkout@v4.2.2
+
+      - name: Setup .NET 8.x
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'
+
+      - name: Install dependencies
+        run: dotnet restore $PROJECT_PATH
+      
+      - name: Build
+        run: dotnet build $PROJECT_PATH --no-restore
+      
+      - name: Publish
+        run: dotnet publish $PROJECT_PATH -c Release -o ./publish
+
+      - name: Package
+        run: zip -r lambda_function.zip ./publish
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package
+          path: lambda_function.zip
