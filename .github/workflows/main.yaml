@@ -39,5 +39,5 @@ jobs:
 
   infra:
     needs: build
-    uses: ./.github/workflows/infra.yml
+    uses: ./.github/workflows/infra.yaml
     secrets: inherit
