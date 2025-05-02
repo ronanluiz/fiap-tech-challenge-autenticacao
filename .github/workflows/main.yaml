@@ -1,4 +1,4 @@
-name: Criação de Lambda de autenticação
+name: Criação do pacote da Lambda de autenticação
 on:
     push:
       branches: [ develop ]   # Aceita push em qualquer branch
@@ -34,5 +34,10 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: package
+          name: lambda_package
           path: lambda_function.zip
+
+  infra:
+    needs: build
+    uses: ./.github/workflows/infra.yml
+    secrets: inherit
