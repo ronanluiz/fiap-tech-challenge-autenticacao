@@ -49,16 +49,16 @@ variable "lambda_zip_path" {
   default     = "./lambda_function.zip"
 }
 
-variable "aws_access_key_id" {  
-  type        = string
-  sensitive   = true
+variable "aws_access_key_id" {
+  type      = string
+  sensitive = true
 }
 
-variable "aws_secret_access_key" {  
-  type        = string
-  sensitive   = true
+variable "aws_secret_access_key" {
+  type      = string
+  sensitive = true
 }
 variable "aws_session_token" {
-  type        = string
-  sensitive   = true
+  type      = string
+  sensitive = true
 }
