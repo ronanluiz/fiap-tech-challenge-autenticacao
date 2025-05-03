@@ -31,6 +31,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: lambda_package
+          path: terraform
 
       - name: Display structure of downloaded files
         run: ls -R
