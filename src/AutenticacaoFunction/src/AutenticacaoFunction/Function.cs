@@ -154,11 +154,11 @@ public class Function
     {
         context.Logger.LogLine($"Verificando cliente com CPF: {cpf}");
 
-        await using var connection = await NpgsqlConnection(_connectionString);
-        await connection.OpenAsync();
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_connectionString);
+        await using var dataSource = dataSourceBuilder.Build();
 
         string sql = "SELECT customer_id, cpf, name, email FROM customer WHERE cpf = @CPF";
-        await using var command = new NpgsqlCommand(sql, connection);
+        await using var command =  dataSource.CreateCommand(sql);
         command.Parameters.AddWithValue("@CPF", cpf);
 
         await using var reader = await command.ExecuteReaderAsync();
@@ -268,11 +268,11 @@ public class Function
     {
         context.Logger.LogLine($"Atualizando último acesso para CPF: {cpf}");
 
-        await using var connection = await NpgsqlConnection(_connectionString);
-        await connection.OpenAsync();
+        var dataSourceBuilder = new NpgsqlDataSourceBuilder(_connectionString);
+        await using var dataSource = dataSourceBuilder.Build();
 
         string sql = "UPDATE customers SET last_access = UTC_TIMESTAMP() WHERE cpf = @CPF";
-        await using var command = new NpgsqlCommand(sql, connection);
+        await using var command = dataSource.CreateCommand(sql);
         command.Parameters.AddWithValue("@CPF", cpf);
 
         await command.ExecuteNonQueryAsync();        
