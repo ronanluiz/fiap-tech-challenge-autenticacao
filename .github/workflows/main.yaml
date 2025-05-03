@@ -23,14 +23,21 @@ jobs:
       - name: Install dependencies
         run: dotnet restore $PROJECT_PATH
       
-      - name: Build
-        run: dotnet build $PROJECT_PATH --no-restore
-      
-      - name: Publish
-        run: dotnet publish $PROJECT_PATH -c Release -o ./publish
+      - name: Install Lambda Tools
+        run: dotnet tool install -g Amazon.Lambda.Tools
 
-      - name: Package
-        run: zip -r lambda_function.zip ./publish
+      # - name: Build
+      #   run: dotnet build $PROJECT_PATH --no-restore
+      
+      - name: Package Lambda
+        run: |
+          dotnet lambda package --configuration Release --framework net8.0 --output-package ./lambda_function.zip --project-location $PROJECT_PATH
+
+      # - name: Publish
+      #   run: dotnet publish $PROJECT_PATH -c Release -o ./publish
+
+      # - name: Package
+      #   run: zip -r lambda_function.zip ./publish
 
       - uses: actions/upload-artifact@v4
         with:
