@@ -18,9 +18,6 @@ resource "aws_lambda_function" "autenticacao_lambda" {
       COGNITO_USER_POOL_ID  = var.cognito_user_pool_id
       COGNITO_CLIENT_ID     = aws_cognito_user_pool_client.client.id
       JWT_SECRET            = var.jwt_secret
-      AWS_ACCESS_KEY_ID     = var.aws_access_key_id
-      AWS_SECRET_ACCESS_KEY = var.aws_secret_access_key
-      AWS_SESSION_TOKEN     = var.aws_session_token
     }
   }
 
