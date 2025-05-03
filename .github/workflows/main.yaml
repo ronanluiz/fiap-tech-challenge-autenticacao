@@ -5,8 +5,7 @@ on:
     pull_request:
 
 env:
-  PROJECT_PATH: src/AutenticacaoFunction/src/AutenticacaoFunction/AutenticacaoFunction.csproj
-
+  PROJECT_PATH: src/AutenticacaoFunction/src/AutenticacaoFunction  
 jobs:
 
   build:
