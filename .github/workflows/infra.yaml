@@ -31,6 +31,9 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: lambda_package
+
+      - name: Display structure of downloaded files
+        run: ls -R
       
       - name: Realiza setup do Terraform
         run: ./terraform/setup.sh
