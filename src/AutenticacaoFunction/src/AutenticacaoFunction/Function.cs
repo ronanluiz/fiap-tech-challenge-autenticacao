@@ -35,9 +35,9 @@ public class Function
         _userPoolId = Environment.GetEnvironmentVariable("COGNITO_USER_POOL_ID");
         _clientId = Environment.GetEnvironmentVariable("COGNITO_CLIENT_ID");
         _jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET");
-        _awsAccessKeyId = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
-        _awsSecretAccessKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
-        _awsSessionToken = Environment.GetEnvironmentVariable("AWS_SESSION_TOKEN");
+        _awsAccessKeyId = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID_COGNITO");
+        _awsSecretAccessKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY_COGNITO");
+        _awsSessionToken = Environment.GetEnvironmentVariable("AWS_SESSION_TOKEN_COGNITO");
     }
 
     /// <summary>
