@@ -11,13 +11,13 @@ resource "aws_lambda_function" "autenticacao_lambda" {
 
   environment {
     variables = {
-      BD_HOST               = var.bd_host
-      BD_NOME               = var.bd_nome
-      BD_USUARIO            = var.bd_usuario
-      BD_SENHA              = var.bd_senha
-      COGNITO_USER_POOL_ID  = var.cognito_user_pool_id
-      COGNITO_CLIENT_ID     = aws_cognito_user_pool_client.client.id
-      JWT_SECRET            = var.jwt_secret
+      BD_HOST              = var.bd_host
+      BD_NOME              = var.bd_nome
+      BD_USUARIO           = var.bd_usuario
+      BD_SENHA             = var.bd_senha
+      COGNITO_USER_POOL_ID = var.cognito_user_pool_id
+      COGNITO_CLIENT_ID    = aws_cognito_user_pool_client.client.id
+      JWT_SECRET           = var.jwt_secret
     }
   }
 
