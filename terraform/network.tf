@@ -12,59 +12,33 @@ data "aws_subnets" "subnets" {
   }
 }
 
-data "aws_security_group" "lambda" {
-  name = "${var.ambiente}-tc-soat10-lambda-sg"
+data "aws_security_group" "rds" {
+  name = "${var.ambiente}-tc-bd-sg"
 }
 
-# resource "aws_db_subnet_group" "postgres_subnet_group" {
-#   name       = "${local.projeto}-subnet-group"
-#   subnet_ids = data.aws_subnets.subnets.ids
+resource "aws_security_group" "lambda" {
+  name        = "${local.projeto}-lambda-sg"
+  description = "Security group for Lambda function"
+  vpc_id      = data.aws_vpc.vpc.id
 
-#   tags = {
-#     Name = "Postgres Subnet Group"
-#   }
-# }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
+  tags = {
+    Name = "${local.projeto}-lambda-sg"
+  }
+}
 
-# Grupos de segurança
-# resource "aws_security_group" "aurora_sg" {
-#   name        = "${local.projeto}-aurora-sg"
-#   description = "Security group for Aurora RDS"
-#   vpc_id      = data.aws_vpc.vpc.id
-
-#   ingress {
-#     from_port       = 5432
-#     to_port         = 5432
-#     protocol        = "tcp"
-#     security_groups = [aws_security_group.lambda_sg.id]
-#     description     = "Enable access from lambda function"
-#   }
-
-#   egress {
-#     from_port   = 0
-#     to_port     = 0
-#     protocol    = "-1"
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
-
-#   tags = {
-#     Name = "${local.projeto}-aurora-sg"
-#   }
-# }
-
-# resource "aws_security_group" "lambda_sg" {
-#   name        = "${local.projeto}-lambda-sg"
-#   description = "Security group for Lambda function"
-#   vpc_id      = module.vpc.vpc_id
-
-#   egress {
-#     from_port   = 0
-#     to_port     = 0
-#     protocol    = "-1"
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
-
-#   tags = {
-#     Name = "${local.projeto}-lambda-sg"
-#   }
-# }
+resource "aws_security_group_rule" "rds_from_lambda" {
+  security_group_id        = data.aws_security_group.rds.id
+  type                     = "ingress"
+  from_port                = 5432 # Porta PostgreSQL
+  to_port                  = 5432
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.lambda.id
+  description              = "Permite acesso da Lambda ao PostgreSQL"
+}

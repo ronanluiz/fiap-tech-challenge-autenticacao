@@ -27,7 +27,7 @@ resource "aws_lambda_function" "autenticacao_lambda" {
 
   vpc_config {
     subnet_ids         = data.aws_subnets.subnets.ids
-    security_group_ids = [data.aws_security_group.lambda.id]
+    security_group_ids = [aws_security_group.lambda.id]
   }
 
   tags = {
