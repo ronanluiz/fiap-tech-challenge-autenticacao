@@ -45,12 +45,28 @@ resource "aws_security_group" "lambda" {
   }
 }
 
-resource "aws_security_group_rule" "rds_from_lambda" {
-  security_group_id        = data.aws_security_group.rds.id
-  type                     = "ingress"
-  from_port                = 5432 # Porta PostgreSQL
-  to_port                  = 5432
-  protocol                 = "tcp"
-  source_security_group_id = aws_security_group.lambda.id
-  description              = "Permite acesso da Lambda ao PostgreSQL"
+resource "aws_security_group" "rds_sg" {
+  name        = "${local.projeto}-rds-lambda-sg"
+  description = "Permite acesso ao RDS a partir da função Lambda"
+  vpc_id      = data.aws_vpc.vpc.id
+
+  # Regra de entrada que permite conexão à porta do banco de dados (ex: MySQL = 3306)
+  ingress {
+    description     = "Acesso do Lambda ao RDS"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.lambda.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${local.projeto}-rds-lambda-sg"
+  }
 }
