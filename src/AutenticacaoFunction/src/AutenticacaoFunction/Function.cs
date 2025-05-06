@@ -27,7 +27,7 @@ public class Function
     private readonly string _awsAccessKeyId;
     private readonly string _awsSecretAccessKey;
     private readonly string _awsSessionToken;
-    private static readonly HttpClient _httpClient;
+    private readonly HttpClient _httpClient;
 
     public Function()
     {
