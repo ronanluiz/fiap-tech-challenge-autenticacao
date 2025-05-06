@@ -24,10 +24,6 @@ data "aws_subnets" "private" {
   }
 }
 
-data "aws_security_group" "rds" {
-  name = "${var.ambiente}-tc-bd-sg"
-}
-
 resource "aws_security_group" "lambda" {
   name        = "${local.projeto}-lambda-sg"
   description = "Security group for Lambda function"
@@ -45,12 +41,10 @@ resource "aws_security_group" "lambda" {
   }
 }
 
-resource "aws_security_group" "rds_sg" {
+resource "aws_security_group" "rds" {
   name        = "${local.projeto}-rds-lambda-sg"
-  description = "Permite acesso ao RDS a partir da função Lambda"
+  description = "Libera acesso ao RDS a partir da Lambda"
   vpc_id      = data.aws_vpc.vpc.id
-
-  # Regra de entrada que permite conexão à porta do banco de dados (ex: MySQL = 3306)
   ingress {
     description     = "Acesso do Lambda ao RDS"
     from_port       = 5432
