@@ -162,7 +162,7 @@ public class Function
         string usuario = Environment.GetEnvironmentVariable("DB_USERNAME");
         string senha = Environment.GetEnvironmentVariable("DB_PASSWORD");
 
-        return "Host=${host};Database=${banco};User ID=${usuario};Password=${senha};";
+        return $"Host={host};Database={banco};User ID={usuario};Password={senha};";
     }
 
     private async Task<Cliente> ValidarCliente(string cpf, ILambdaContext context)
