@@ -157,10 +157,10 @@ public class Function
 
     private string CriarConnectionString()
     {
-        string host = Environment.GetEnvironmentVariable("DB_HOST");
-        string banco = Environment.GetEnvironmentVariable("DB_NAME");
-        string usuario = Environment.GetEnvironmentVariable("DB_USERNAME");
-        string senha = Environment.GetEnvironmentVariable("DB_PASSWORD");
+        string host = Environment.GetEnvironmentVariable("BD_HOST");
+        string banco = Environment.GetEnvironmentVariable("BD_NOME");
+        string usuario = Environment.GetEnvironmentVariable("BD_USUARIO");
+        string senha = Environment.GetEnvironmentVariable("BD_SENHA");
 
         return $"Host={host};Database={banco};User ID={usuario};Password={senha};";
     }
