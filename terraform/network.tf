@@ -12,6 +12,18 @@ data "aws_subnets" "subnets" {
   }
 }
 
+data "aws_subnets" "private" {
+  filter {
+    name   = "tag:Name"
+    values = ["-private-"] # ou qualquer padrão usado para nomear suas subnets privadas
+  }
+
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.vpc.id]
+  }
+}
+
 data "aws_security_group" "rds" {
   name = "${var.ambiente}-tc-bd-sg"
 }

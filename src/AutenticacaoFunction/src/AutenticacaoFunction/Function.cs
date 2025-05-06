@@ -27,6 +27,7 @@ public class Function
     private readonly string _awsAccessKeyId;
     private readonly string _awsSecretAccessKey;
     private readonly string _awsSessionToken;
+    private static readonly HttpClient _httpClient;
 
     public Function()
     {
@@ -38,6 +39,7 @@ public class Function
         _awsAccessKeyId = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID_COGNITO");
         _awsSecretAccessKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY_COGNITO");
         _awsSessionToken = Environment.GetEnvironmentVariable("AWS_SESSION_TOKEN_COGNITO");
+         _httpClient = new HttpClient();
     }
 
     /// <summary>
@@ -61,6 +63,19 @@ public class Function
                     Body = JsonConvert.SerializeObject(new { message = "Método não permitido" }),
                     Headers = new Dictionary<string, string> { { "Content-Type", "application/json" } }
                 };
+            }
+
+            string urlExterna = "https://google.com";
+
+            HttpResponseMessage response = await _httpClient.GetAsync(urlExterna);
+
+            if (response.IsSuccessStatusCode)
+            {
+                context.Logger.LogLine($"Chamada bem-sucedida para {urlExterna}");                
+            }
+            else
+            {
+                context.Logger.LogLine($"Erro ao chamar {urlExterna}. Status: {response.StatusCode}");
             }
 
             // Extrair CPF do corpo da requisição
