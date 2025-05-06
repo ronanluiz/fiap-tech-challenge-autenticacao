@@ -15,7 +15,7 @@ data "aws_subnets" "subnets" {
 data "aws_subnets" "private" {
   filter {
     name   = "tag:Name"
-    values = ["-private-"] # ou qualquer padrão usado para nomear suas subnets privadas
+    values = ["*private*"] # ou qualquer padrão usado para nomear suas subnets privadas
   }
 
   filter {
