@@ -37,6 +37,11 @@ variable "cognito_user_pool_id" {
   type        = string
 }
 
+variable "cognito_user_pool_client_id" {
+  description = "Id do User Pool Id do Congnito"
+  type        = string
+}
+
 variable "jwt_secret" {
   description = "Chave secreta para assinar tokens JWT"
   type        = string

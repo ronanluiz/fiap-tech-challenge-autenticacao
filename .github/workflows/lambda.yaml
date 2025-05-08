@@ -1,0 +1,103 @@
+name: Criação de infra para publicação da lambda
+
+on:
+  workflow_call:
+
+env:
+  AMBIENTE: ${{ (github.ref_name == 'main' || github.event_name == 'pull_request') && 'prod' || 'dev' }}
+  TERRAFORM_DIR: terraform/lambda
+  TF_VAR_bd_senha: ${{ secrets.DB_PASSWORD }}
+  TF_VAR_bd_usuario: ${{ secrets.DB_USER }}
+  TF_VAR_bd_nome:  ${{ vars.DB_NAME }}
+  TF_VAR_bd_host:  ${{ vars.DB_HOST }}
+  TF_VAR_cognito_user_pool_id: $COGNITO_USER_POOL_ID
+  TF_VAR_cognito_user_pool_client_id: $COGNITO_USER_POOL_CLIENT_ID
+  TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
+  TF_VAR_aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  TF_VAR_aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  TF_VAR_aws_session_token: ${{ secrets.AWS_SESSION_TOKEN }}
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      
+      - uses: actions/download-artifact@v4
+        with:
+          name: lambda_package
+          path: terraform
+
+      - name: Display structure of downloaded files
+        run: ls -R
+      
+      - name: Realiza setup do Terraform
+        run: ./terraform/setup.sh
+
+      - name: Setup do Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.11.3"
+          terraform_wrapper: false # Configuração para permiter acesso aos outputs do terraform
+
+      - name: Terraform Format
+        id: fmt
+        run: terraform -chdir=$TERRAFORM_DIR fmt -check
+
+      - name: Terraform Init
+        id: init
+        run: terraform -chdir=$TERRAFORM_DIR init
+      
+      - name: Terraform Validate
+        id: validate
+        run: terraform -chdir=$TERRAFORM_DIR validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        if: github.event_name == 'pull_request' || github.ref_name == 'develop'
+        run: terraform -chdir=$TERRAFORM_DIR plan -var "ambiente=$AMBIENTE" -no-color -input=false
+        continue-on-error: true
+
+      - name: Atualização do Pull Request
+        uses: actions/github-script@v7
+        if: github.event_name == 'pull_request'
+        env:
+          PLAN: ${{ steps.plan.outputs.stdout }}
+        with:
+          script: |
+            const output = `#### Terraform - Formatação e Estilo 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Init ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validação 🤖\`${{ steps.validate.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+            <details><summary>Detalhes do Terraform Plan</summary>
+
+            \`\`\`terraform\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Enviado por: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      - name: Terraform Apply
+        if: (github.ref_name == 'main' || github.ref_name == 'develop') && github.event_name == 'push'
+        run: terraform -chdir=$TERRAFORM_DIR apply -var "ambiente=$AMBIENTE" -auto-approve -input=false

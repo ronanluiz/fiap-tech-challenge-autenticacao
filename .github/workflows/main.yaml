@@ -43,7 +43,12 @@ jobs:
           name: lambda_package
           path: lambda_function.zip
 
-  infra:
+  cognito:
     needs: build
-    uses: ./.github/workflows/infra.yaml
+    uses: ./.github/workflows/cognito.yaml
     secrets: inherit
+  
+  lambda:
+      needs: cognito
+      uses: ./.github/workflows/lambda.yaml
+      secrets: inherit

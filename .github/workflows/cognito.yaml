@@ -1,19 +1,12 @@
-name: Criação de infra para publicação da lambda
+name: Criação de infra para cognito
 
 on:
   workflow_call:
 
 env:
   AMBIENTE: ${{ (github.ref_name == 'main' || github.event_name == 'pull_request') && 'prod' || 'dev' }}
-  TF_VAR_bd_senha: ${{ secrets.DB_PASSWORD }}
-  TF_VAR_bd_usuario: ${{ secrets.DB_USER }}
-  TF_VAR_bd_nome:  ${{ vars.DB_NAME }}
-  TF_VAR_bd_host:  ${{ vars.DB_HOST }}
-  TF_VAR_cognito_user_pool_id: ${{ vars.COGNITO_USER_POOL_ID }}
-  TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
-  TF_VAR_aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  TF_VAR_aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  TF_VAR_aws_session_token: ${{ secrets.AWS_SESSION_TOKEN }}
+  TERRAFORM_DIR: terraform/cognito
+
 jobs:
   terraform:
     runs-on: ubuntu-latest
@@ -28,14 +21,6 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ vars.AWS_REGION }}
       
-      - uses: actions/download-artifact@v4
-        with:
-          name: lambda_package
-          path: terraform
-
-      - name: Display structure of downloaded files
-        run: ls -R
-      
       - name: Realiza setup do Terraform
         run: ./terraform/setup.sh
 
@@ -47,11 +32,11 @@ jobs:
 
       - name: Terraform Format
         id: fmt
-        run: terraform -chdir=terraform fmt -check
+        run: terraform -chdir=$TERRAFORM_DIR fmt -check
 
       - name: Terraform Init
         id: init
-        run: terraform -chdir=terraform init
+        run: terraform -chdir=$TERRAFORM_DIR init
       
       - name: Terraform Validate
         id: validate
@@ -60,7 +45,7 @@ jobs:
       - name: Terraform Plan
         id: plan
         if: github.event_name == 'pull_request' || github.ref_name == 'develop'
-        run: terraform -chdir=terraform plan -var "ambiente=$AMBIENTE" -no-color -input=false
+        run: terraform -chdir=$TERRAFORM_DIR plan -var "ambiente=$AMBIENTE" -no-color -input=false
         continue-on-error: true
 
       - name: Atualização do Pull Request
@@ -98,4 +83,12 @@ jobs:
 
       - name: Terraform Apply
         if: (github.ref_name == 'main' || github.ref_name == 'develop') && github.event_name == 'push'
-        run: terraform -chdir=terraform apply -var "ambiente=$AMBIENTE" -auto-approve -input=false
+        run: terraform -chdir=#TERRAFORM_DIR apply -var "ambiente=$AMBIENTE" -auto-approve -input=false
+      
+      - name: Export Terraform outputs
+        id: tf
+        run: |
+          echo "COGNITO_USER_POOL_ID=$(terraform output -raw cognito_user_poll_id)" >> $GITHUB_ENV
+          echo "COGNITO_USER_POOL_CLIENT_ID=$(terraform output -raw variable "cognito_user_pool_client_id" {
+            )" >> $GITHUB_ENV
+        working-directory: ./terraform
