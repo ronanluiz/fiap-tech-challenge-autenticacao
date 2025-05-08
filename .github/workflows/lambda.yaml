@@ -2,6 +2,13 @@ name: Criação de infra para publicação da lambda
 
 on:
   workflow_call:
+    inputs:
+      cognito_user_pool_id:
+        required: true
+        type: string
+      cognito_user_pool_client_id:
+        required: true
+        type: string
 
 env:
   AMBIENTE: ${{ (github.ref_name == 'main' || github.event_name == 'pull_request') && 'prod' || 'dev' }}
@@ -10,8 +17,8 @@ env:
   TF_VAR_bd_usuario: ${{ secrets.DB_USER }}
   TF_VAR_bd_nome:  ${{ vars.DB_NAME }}
   TF_VAR_bd_host:  ${{ vars.DB_HOST }}
-  TF_VAR_cognito_user_pool_id: ${{ github.env.COGNITO_USER_POOL_ID }}
-  TF_VAR_cognito_user_pool_client_id: ${{ github.env.COGNITO_USER_POOL_CLIENT_ID }}
+  TF_VAR_cognito_user_pool_id: ${{ inputs.cognito_user_pool_id }}
+  TF_VAR_cognito_user_pool_client_id: ${{ inputs.cognito_user_pool_client_id }}
   TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
   TF_VAR_aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
   TF_VAR_aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
