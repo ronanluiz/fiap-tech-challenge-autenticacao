@@ -10,8 +10,8 @@ env:
   TF_VAR_bd_usuario: ${{ secrets.DB_USER }}
   TF_VAR_bd_nome:  ${{ vars.DB_NAME }}
   TF_VAR_bd_host:  ${{ vars.DB_HOST }}
-  TF_VAR_cognito_user_pool_id: $COGNITO_USER_POOL_ID
-  TF_VAR_cognito_user_pool_client_id: $COGNITO_USER_POOL_CLIENT_ID
+  TF_VAR_cognito_user_pool_id: ${{ github.env.COGNITO_USER_POOL_ID }}
+  TF_VAR_cognito_user_pool_client_id: ${{ github.env.COGNITO_USER_POOL_CLIENT_ID }}
   TF_VAR_jwt_secret: ${{ secrets.JWT_SECRET }}
   TF_VAR_aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
   TF_VAR_aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
