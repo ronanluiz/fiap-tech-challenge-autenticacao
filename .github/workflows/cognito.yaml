@@ -2,7 +2,11 @@ name: Criação de infra para cognito
 
 on:
   workflow_call:
-
+    outputs:
+      cognito_user_pool_id:        
+        value: ${{ jobs.terraform.outputs.cognito_user_pool_id }}
+      cognito_user_pool_client_id:
+        value: ${{ jobs.terraform.outputs.cognito_user_pool_client_id }}
 env:
   AMBIENTE: ${{ (github.ref_name == 'main' || github.event_name == 'pull_request') && 'prod' || 'dev' }}
   TERRAFORM_DIR: terraform/cognito
