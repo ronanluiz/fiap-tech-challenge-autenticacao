@@ -88,6 +88,6 @@ jobs:
       - name: Export Terraform outputs
         id: tf
         run: |
-          echo "COGNITO_USER_POOL_ID=$(terraform -chdir=$TERRAFORM_DIR output -raw cognito_user_pool_id)" >> $GITHUB_ENV
-          echo "COGNITO_USER_POOL_CLIENT_ID=$(terraform -chdir=$TERRAFORM_DIR output -raw variable cognito_user_pool_client_id)" >> $GITHUB_ENV
-        working-directory: ./terraform
+          echo "COGNITO_USER_POOL_ID=$(terraform output -raw cognito_user_pool_id)" >> $GITHUB_ENV
+          echo "COGNITO_USER_POOL_CLIENT_ID=$(terraform output -raw variable cognito_user_pool_client_id)" >> $GITHUB_ENV
+        working-directory: ./terraform/cognito
