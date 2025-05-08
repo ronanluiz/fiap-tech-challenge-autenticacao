@@ -40,7 +40,7 @@ jobs:
       
       - name: Terraform Validate
         id: validate
-        run: terraform -chdir=terraform validate -no-color
+        run: terraform -chdir=$TERRAFORM_DIR validate -no-color
 
       - name: Terraform Plan
         id: plan
