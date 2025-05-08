@@ -83,7 +83,7 @@ jobs:
 
       - name: Terraform Apply
         if: (github.ref_name == 'main' || github.ref_name == 'develop') && github.event_name == 'push'
-        run: terraform -chdir=#TERRAFORM_DIR apply -var "ambiente=$AMBIENTE" -auto-approve -input=false
+        run: terraform -chdir=$TERRAFORM_DIR apply -var "ambiente=$AMBIENTE" -auto-approve -input=false
       
       - name: Export Terraform outputs
         id: tf
