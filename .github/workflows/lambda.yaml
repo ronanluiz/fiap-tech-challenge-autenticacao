@@ -28,6 +28,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.2.2
+
+      - name: Show inputs
+        id: inputs
+        run: |
+          echo "cognito_user_pool_id -> ${{ inputs.cognito_user_pool_id }}"
+          echo "cognito_user_pool_client_id-> ${{ inputs.cognito_user_pool_client_id }}" 
       
       - name: Configurar credenciais AWS
         uses: aws-actions/configure-aws-credentials@v4

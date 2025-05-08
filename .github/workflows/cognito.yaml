@@ -14,6 +14,9 @@ env:
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    outputs:
+      cognito_user_pool_id: ${{ steps.tf.outputs.cognito_user_pool_id }}
+      cognito_user_pool_client_id: ${{ steps.tf.outputs.cognito_user_pool_client_id }}
     steps:
       - uses: actions/checkout@v4.2.2
       
