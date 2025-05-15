@@ -119,7 +119,7 @@ jobs:
         id: tf
         run: |
           echo "API_GATEWAY_URL=$(terraform output -raw api_gateway_url)" >> $GITHUB_ENV
-        working-directory: $TERRAFORM_DIR
+        working-directory: ./${{ env.TERRAFORM_DIR }}
       
       - name: Create Output
         run: |
