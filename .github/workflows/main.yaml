@@ -12,13 +12,13 @@ jobs:
     uses: ./.github/workflows/build_lambda.yaml
     secrets: inherit
 
-  destroi_cognito:
-    needs: build
-    uses: ./.github/workflows/destroi_cognito.yaml
-    secrets: inherit
+  # destroi_cognito:
+  #   needs: build
+  #   uses: ./.github/workflows/destroi_cognito.yaml
+  #   secrets: inherit
 
   cognito:
-    needs: destroi_cognito
+    needs: build
     uses: ./.github/workflows/cognito.yaml
     secrets: inherit
   

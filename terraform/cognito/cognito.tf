@@ -1,5 +1,9 @@
 # cognito.tf - Recursos do Amazon Cognito
 
+data "aws_cognito_user_pools" "existence" {
+  name = "${local.project}-user-pool"
+}
+
 resource "aws_cognito_user_pool" "user_pool" {
   name = "${local.project}-user-pool"
 
@@ -43,6 +47,8 @@ resource "aws_cognito_user_pool" "user_pool" {
   tags = {
     Name = "${local.project}-user-pool"
   }
+
+  count = length(aws_cognito_user_pools.existence) > 0 ? 0 : 1
 }
 
 resource "aws_cognito_user_pool_client" "client" {
@@ -55,4 +61,5 @@ resource "aws_cognito_user_pool_client" "client" {
   ]
 
   generate_secret = false
+  count           = length(aws_cognito_user_pools.existence) > 0 ? 0 : 1
 }
