@@ -8,7 +8,7 @@ on:
       cognito_user_pool_client_id:
         value: ${{ jobs.terraform.outputs.cognito_user_pool_client_id }}
 env:
-  AMBIENTE: ${{ (github.ref_name == 'main' || github.event_name == 'pull_request') && 'prod' || 'dev' }}
+  TF_VAR_environment: ${{ (github.ref_name == 'main' || github.event_name == 'pull_request') && 'prod' || 'dev' }}
   TERRAFORM_DIR: terraform/cognito
 
 jobs:
@@ -52,7 +52,7 @@ jobs:
       - name: Terraform Plan
         id: plan
         if: github.event_name == 'pull_request' || github.ref_name == 'develop'
-        run: terraform -chdir=$TERRAFORM_DIR plan -var "ambiente=$AMBIENTE" -no-color -input=false
+        run: terraform -chdir=$TERRAFORM_DIR plan -no-color -input=false
         continue-on-error: true
 
       - name: Update Pull Request
@@ -90,7 +90,7 @@ jobs:
 
       - name: Terraform Apply
         if: (github.ref_name == 'main' || github.ref_name == 'develop') && github.event_name == 'push'
-        run: terraform -chdir=$TERRAFORM_DIR apply -var "ambiente=$AMBIENTE" -auto-approve -input=false
+        run: terraform -chdir=$TERRAFORM_DIR apply -auto-approve -input=false
       
       - name: Export Terraform outputs
         id: tf

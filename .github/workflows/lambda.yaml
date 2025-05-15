@@ -1,4 +1,4 @@
-name: Build infrastructure lambda
+name: Build lambda infrastructure
 
 on:
   workflow_call:
