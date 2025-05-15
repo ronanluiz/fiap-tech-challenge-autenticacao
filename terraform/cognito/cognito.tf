@@ -1,6 +1,6 @@
 # cognito.tf - Recursos do Amazon Cognito
 
-data "aws_cognito_user_pools" "existence" {
+data "aws_cognito_user_pools" "existing" {
   name = "${local.project}-user-pool"
 }
 
@@ -48,12 +48,12 @@ resource "aws_cognito_user_pool" "user_pool" {
     Name = "${local.project}-user-pool"
   }
 
-  count = length(aws_cognito_user_pools.existence) > 0 ? 0 : 1
+  count = length(data.aws_cognito_user_pools.existing) > 0 ? 0 : 1
 }
 
 resource "aws_cognito_user_pool_client" "client" {
   name         = "${local.project}-app-client"
-  user_pool_id = aws_cognito_user_pool.user_pool.id
+  user_pool_id = aws_cognito_user_pool.user_pool[0].id
 
   explicit_auth_flows = [
     "ADMIN_NO_SRP_AUTH",
@@ -61,5 +61,5 @@ resource "aws_cognito_user_pool_client" "client" {
   ]
 
   generate_secret = false
-  count           = length(aws_cognito_user_pools.existence) > 0 ? 0 : 1
+  count           = length(data.aws_cognito_user_pools.existing) > 0 ? 0 : 1
 }
