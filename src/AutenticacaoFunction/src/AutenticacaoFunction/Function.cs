@@ -286,7 +286,7 @@ public class Function
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(_connectionString);
         await using var dataSource = dataSourceBuilder.Build();
 
-        string sql = "UPDATE customer SET last_access = UTC_TIMESTAMP() WHERE cpf = @CPF";
+        string sql = "UPDATE customer SET last_access = CURRENT_TIMESTAMP WHERE cpf = @CPF";
         await using var command = dataSource.CreateCommand(sql);
         command.Parameters.AddWithValue("@CPF", cpf);
 
