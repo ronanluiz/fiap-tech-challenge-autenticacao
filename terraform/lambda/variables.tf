@@ -1,33 +1,33 @@
 # variables.tf
 locals {
-  projeto = "${var.ambiente}-tc-autenticacao"
+  project = "${var.environment}-tc-autenticacao"
 }
 
-variable "regiao" {
+variable "region" {
   description = "A região da AWS onde os recursos serão criados"
   type        = string
   default     = "us-east-1"
 }
 
-variable "ambiente" {
+variable "environment" {
   description = "Ambiente no qual o projeto será implantado"
   type        = string
   default     = "dev"
 }
 
-variable "bd_nome" {
+variable "db_name" {
   type = string
 }
 
-variable "bd_usuario" {
+variable "db_username" {
   type = string
 }
 
-variable "bd_senha" {
+variable "db_password" {
   type = string
 }
 
-variable "bd_host" {
+variable "db_host" {
   type      = string
   sensitive = true
 }

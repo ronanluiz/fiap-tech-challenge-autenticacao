@@ -1,7 +1,7 @@
 # network.tf - Recursos de rede (VPC, Subnets, etc.)
 data "aws_vpc" "vpc" {
   tags = {
-    Name = "${var.ambiente}-tc-soat10-vpc"
+    Name = "${var.environment}-tc-soat10-vpc"
   }
 }
 
@@ -25,7 +25,7 @@ data "aws_subnets" "private" {
 }
 
 resource "aws_security_group" "lambda" {
-  name        = "${local.projeto}-lambda-sg"
+  name        = "${local.project}-lambda-sg"
   description = "Security group for Lambda function"
   vpc_id      = data.aws_vpc.vpc.id
 
@@ -37,12 +37,12 @@ resource "aws_security_group" "lambda" {
   }
 
   tags = {
-    Name = "${local.projeto}-lambda-sg"
+    Name = "${local.project}-lambda-sg"
   }
 }
 
 resource "aws_security_group" "rds" {
-  name        = "${local.projeto}-rds-lambda-sg"
+  name        = "${local.project}-rds-lambda-sg"
   description = "Libera acesso ao RDS a partir da Lambda"
   vpc_id      = data.aws_vpc.vpc.id
   ingress {
@@ -61,6 +61,6 @@ resource "aws_security_group" "rds" {
   }
 
   tags = {
-    Name = "${local.projeto}-rds-lambda-sg"
+    Name = "${local.project}-rds-lambda-sg"
   }
 }

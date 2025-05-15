@@ -1,4 +1,4 @@
-name: Criação de infra para cognito
+name: Build cognito infrastructure
 
 on:
   workflow_call:
@@ -28,7 +28,7 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ vars.AWS_REGION }}
       
-      - name: Realiza setup do Terraform
+      - name: Setup prerequisites for Terraform
         run: ./terraform/setup.sh
 
       - name: Setup do Terraform
@@ -55,7 +55,7 @@ jobs:
         run: terraform -chdir=$TERRAFORM_DIR plan -var "ambiente=$AMBIENTE" -no-color -input=false
         continue-on-error: true
 
-      - name: Atualização do Pull Request
+      - name: Update Pull Request
         uses: actions/github-script@v7
         if: github.event_name == 'pull_request'
         env:

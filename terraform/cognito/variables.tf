@@ -1,15 +1,15 @@
 # variables.tf
 locals {
-  projeto = "${var.ambiente}-tc-cognito"
+  project = "${var.environment}-tc-cognito"
 }
 
-variable "regiao" {
+variable "region" {
   description = "A região da AWS onde os recursos serão criados"
   type        = string
   default     = "us-east-1"
 }
 
-variable "ambiente" {
+variable "environment" {
   description = "Ambiente no qual o projeto será implantado"
   type        = string
   default     = "dev"

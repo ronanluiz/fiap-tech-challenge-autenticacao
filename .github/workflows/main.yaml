@@ -1,4 +1,4 @@
-name: Criação do pacote da Lambda de autenticação
+name: Build lambda authentication
 on:
     push:
       branches: [ develop ]   # Aceita push em qualquer branch
@@ -9,39 +9,8 @@ env:
 jobs:
 
   build:
-    name: "Build da aplicação lambda de autenticação"
-    runs-on: ubuntu-latest
-    steps:            
-      - uses: actions/checkout@v4.2.2
-
-      - name: Setup .NET 8.x
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.x'
-
-      - name: Install dependencies
-        run: dotnet restore $PROJECT_PATH
-      
-      - name: Install Lambda Tools
-        run: dotnet tool install -g Amazon.Lambda.Tools
-
-      # - name: Build
-      #   run: dotnet build $PROJECT_PATH --no-restore
-      
-      - name: Package Lambda
-        run: |
-          dotnet lambda package --configuration Release --framework net8.0 --output-package ./lambda_function.zip --project-location $PROJECT_PATH
-
-      # - name: Publish
-      #   run: dotnet publish $PROJECT_PATH -c Release -o ./publish
-
-      # - name: Package
-      #   run: zip -r lambda_function.zip ./publish
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: lambda_package
-          path: lambda_function.zip
+    uses: ./.github/workflows/build_lambda.yaml
+    secrets: inherit
 
   destroi_cognito:
     needs: build

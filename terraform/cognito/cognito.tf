@@ -1,7 +1,7 @@
 # cognito.tf - Recursos do Amazon Cognito
 
 resource "aws_cognito_user_pool" "user_pool" {
-  name = "${local.projeto}-user-pool"
+  name = "${local.project}-user-pool"
 
   # Configurações de atributos
   schema {
@@ -41,12 +41,12 @@ resource "aws_cognito_user_pool" "user_pool" {
   }
 
   tags = {
-    Name = "${local.projeto}-user-pool"
+    Name = "${local.project}-user-pool"
   }
 }
 
 resource "aws_cognito_user_pool_client" "client" {
-  name         = "${local.projeto}-app-client"
+  name         = "${local.project}-app-client"
   user_pool_id = aws_cognito_user_pool.user_pool.id
 
   explicit_auth_flows = [

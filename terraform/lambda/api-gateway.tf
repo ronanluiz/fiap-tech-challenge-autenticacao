@@ -1,7 +1,7 @@
 # api-gateway.tf - Recursos do API Gateway
 
 resource "aws_api_gateway_rest_api" "api" {
-  name        = "${local.projeto}-api"
+  name        = "${local.project}-api"
   description = "API para autenticação via CPF"
 
   endpoint_configuration {
@@ -9,7 +9,7 @@ resource "aws_api_gateway_rest_api" "api" {
   }
 
   tags = {
-    Name = "${local.projeto}-api"
+    Name = "${local.project}-api"
   }
 }
 
@@ -103,9 +103,9 @@ resource "aws_api_gateway_deployment" "api_deployment" {
 resource "aws_api_gateway_stage" "stage" {
   deployment_id = aws_api_gateway_deployment.api_deployment.id
   rest_api_id   = aws_api_gateway_rest_api.api.id
-  stage_name    = var.ambiente
+  stage_name    = var.environment
 
   tags = {
-    Name = "${local.projeto}-stage"
+    Name = "${local.project}-stage"
   }
 }

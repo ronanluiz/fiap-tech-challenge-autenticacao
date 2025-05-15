@@ -1,5 +1,5 @@
 resource "aws_lambda_function" "autenticacao_lambda" {
-  function_name = "${local.projeto}-function"
+  function_name = "${local.project}-function"
   role          = data.aws_iam_role.lab_role.arn
   handler       = "AutenticacaoFunction::AutenticacaoFunction.Function::FunctionHandler"
   runtime       = "dotnet8"
@@ -11,10 +11,10 @@ resource "aws_lambda_function" "autenticacao_lambda" {
 
   environment {
     variables = {
-      BD_HOST                       = var.bd_host
-      BD_NOME                       = var.bd_nome
-      BD_USUARIO                    = var.bd_usuario
-      BD_SENHA                      = var.bd_senha
+      BD_HOST                       = var.db_host
+      BD_NOME                       = var.db_name
+      BD_USUARIO                    = var.db_username
+      BD_SENHA                      = var.db_password
       COGNITO_USER_POOL_ID          = var.cognito_user_pool_id
       COGNITO_CLIENT_ID             = var.cognito_user_pool_client_id
       JWT_SECRET                    = var.jwt_secret
@@ -31,7 +31,7 @@ resource "aws_lambda_function" "autenticacao_lambda" {
   }
 
   tags = {
-    Name = "${local.projeto}-lambda"
+    Name = "${local.project}-lambda"
   }
 }
 
