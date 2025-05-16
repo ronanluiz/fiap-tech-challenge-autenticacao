@@ -5,22 +5,28 @@ on:
     pull_request:
 
 env:
-  PROJECT_PATH: src/AutenticacaoFunction/src/AutenticacaoFunction  
+  PROJECT_PATH: src/AutenticacaoFunction/src/AutenticacaoFunction
+  ENVIRONMENT: ${{ (github.ref_name == 'main' || github.event_name == 'pull_request') && 'prod' || 'dev' }}
 jobs:
+
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ env.ENVIRONMENT }}
+    steps:
+      - name: Set outputs
+        run: echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
 
   build:
     uses: ./.github/workflows/build_lambda.yaml
     secrets: inherit
 
-  # destroi_cognito:
-  #   needs: build
-  #   uses: ./.github/workflows/destroi_cognito.yaml
-  #   secrets: inherit
-
   cognito:
-    needs: build
+    needs: [setup, build]
     uses: ./.github/workflows/cognito.yaml
     secrets: inherit
+    with:
+      environment: ${{ needs.setup.outputs.environment }} 
   
   lambda:
       needs: cognito

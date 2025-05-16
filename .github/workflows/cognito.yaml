@@ -2,17 +2,70 @@ name: Build cognito infrastructure
 
 on:
   workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
     outputs:
       cognito_user_pool_id:        
         value: ${{ jobs.terraform.outputs.cognito_user_pool_id }}
       cognito_user_pool_client_id:
         value: ${{ jobs.terraform.outputs.cognito_user_pool_client_id }}
 env:
-  TF_VAR_environment: ${{ (github.ref_name == 'main' || github.event_name == 'pull_request') && 'prod' || 'dev' }}
+  TF_VAR_environment: ${{ inputs.environment }}
   TERRAFORM_DIR: terraform/cognito
+  COGNITO_USER_POOL_NAME: "${{ inputs.environment }}-tc-cognito-user-pool"
+  COGNITO_CLIENT_NAME: "${{ inputs.environment }}-tc-cognito-user-pool-client"
 
 jobs:
+  check-cognito:
+    runs-on: ubuntu-latest
+    outputs:
+      cognito_user_pool_id: ${{ steps.tf.outputs.cognito_user_pool_id }}
+      cognito_user_pool_client_id: ${{ steps.tf.outputs.cognito_user_pool_client_id }}
+      resources_exist: ${{ steps.get-cognito-resources.outputs.resources_exist }}
+    steps:
+      - uses: actions/checkout@v4.2.2
+      
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      
+      - name: Check cognito resources
+        id: get-cognito-resources
+        run: |
+          # Verifica se o User Pool existe
+          USER_POOLS=$(aws cognito-idp list-user-pools --max-results 60 | jq -r '.UserPools[] | select(.Name=="${{ env.COGNITO_USER_POOL_NAME }}") | .Id')
+          
+          if [ -n "$USER_POOLS" ]; then
+            echo "User Pool encontrado: $USER_POOLS"
+            USER_POOL_ID=$USER_POOLS
+            
+            # Verifica se existe o Client para este User Pool
+            CLIENTS=$(aws cognito-idp list-user-pool-clients --user-pool-id $USER_POOL_ID | jq -r '.UserPoolClients[] | select(.ClientName=="${{ env.COGNITO_CLIENT_NAME }}") | .ClientId')
+            
+            if [ -n "$CLIENTS" ]; then
+              echo "Client ID encontrado: $CLIENTS"
+              CLIENT_ID=$CLIENTS
+              echo "resources_exist=true" >> $GITHUB_OUTPUT
+              echo "user_pool_id=$USER_POOL_ID" >> $GITHUB_OUTPUT
+              echo "client_id=$CLIENT_ID" >> $GITHUB_OUTPUT
+            else
+              echo "Client não encontrado para o User Pool $USER_POOL_ID"
+              echo "resources_exist=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "User Pool não encontrado"
+            echo "resources_exist=false" >> $GITHUB_OUTPUT
+          fi       
+
   terraform:
+    needs: check-cognito
+    if: needs.check-cognito.outputs.resources_exist == 'false'
     runs-on: ubuntu-latest
     outputs:
       cognito_user_pool_id: ${{ steps.tf.outputs.cognito_user_pool_id }}
@@ -28,6 +81,34 @@ jobs:
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ vars.AWS_REGION }}
       
+      - name: Check cognito resources
+        id: get-cognito-resources
+        run: |
+          # Verifica se o User Pool existe
+          USER_POOLS=$(aws cognito-idp list-user-pools --max-results 60 | jq -r '.UserPools[] | select(.Name=="${{ env.COGNITO_USER_POOL_NAME }}") | .Id')
+          
+          if [ -n "$USER_POOLS" ]; then
+            echo "User Pool encontrado: $USER_POOLS"
+            USER_POOL_ID=$USER_POOLS
+            
+            # Verifica se existe o Client para este User Pool
+            CLIENTS=$(aws cognito-idp list-user-pool-clients --user-pool-id $USER_POOL_ID | jq -r '.UserPoolClients[] | select(.ClientName=="${{ env.COGNITO_CLIENT_NAME }}") | .ClientId')
+            
+            if [ -n "$CLIENTS" ]; then
+              echo "Client ID encontrado: $CLIENTS"
+              CLIENT_ID=$CLIENTS
+              echo "resources_exist=true" >> $GITHUB_OUTPUT
+              echo "user_pool_id=$USER_POOL_ID" >> $GITHUB_OUTPUT
+              echo "client_id=$CLIENT_ID" >> $GITHUB_OUTPUT
+            else
+              echo "Client não encontrado para o User Pool $USER_POOL_ID"
+              echo "resources_exist=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "User Pool não encontrado"
+            echo "resources_exist=false" >> $GITHUB_OUTPUT
+          fi
+        
       - name: Setup prerequisites for Terraform
         run: ./terraform/setup.sh
 
