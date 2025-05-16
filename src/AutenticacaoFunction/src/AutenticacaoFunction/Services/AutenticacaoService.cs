@@ -7,12 +7,12 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace AutenticacaoFunction.Services
 {
-    public class AuthenticationService : IAuthenticationService
+    public class AutenticacaoService : IAutenticacaoService
     {
         private readonly string _jwtSecret;
         private readonly int _jwtExpirationHours;
 
-        public AuthenticationService(AppConfig config)
+        public AutenticacaoService(AppConfig config)
         {
             _jwtSecret = config.JwtSecret;
             _jwtExpirationHours = config.JwtExpirationHours;
