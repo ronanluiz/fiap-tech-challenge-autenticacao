@@ -28,9 +28,9 @@ jobs:
     with:
       environment: ${{ needs.setup.outputs.environment }} 
   
-  lambda:
+  deploy_lambda:
       needs: cognito
-      uses: ./.github/workflows/lambda.yaml
+      uses: ./.github/workflows/deploy_lambda.yaml
       secrets: inherit
       with:
         cognito_user_pool_id: ${{ needs.cognito.outputs.cognito_user_pool_id }}

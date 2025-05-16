@@ -124,4 +124,4 @@ jobs:
       - name: Create Output
         run: |
           echo "## API Gateway Endpoint" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Serviço disponível em: http://${{ env.API_GATEWAY_URL }}" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Serviço disponível em: ${{ env.API_GATEWAY_URL }}" >> $GITHUB_STEP_SUMMARY
