@@ -8,9 +8,9 @@ on:
         type: string
     outputs:
       cognito_user_pool_id:        
-        value: ${{ jobs.terraform.outputs.cognito_user_pool_id }}
+        value: ${{ jobs.terraform.outputs.cognito_user_pool_id || jobs.check-cognito.outputs.cognito_user_pool_id }}
       cognito_user_pool_client_id:
-        value: ${{ jobs.terraform.outputs.cognito_user_pool_client_id }}
+        value: ${{ jobs.terraform.outputs.cognito_user_pool_client_id || jobs.check-cognito.outputs.cognito_user_pool_client_id }}
 env:
   TF_VAR_environment: ${{ inputs.environment }}
   TERRAFORM_DIR: terraform/cognito
