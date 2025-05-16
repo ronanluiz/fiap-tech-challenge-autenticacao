@@ -17,7 +17,7 @@ public class Function
 {
     private readonly IClienteService _clienteService;
     private readonly ICognitoService _cognitoService;
-    private readonly IAuthenticationService _autenticacaoService;
+    private readonly IAutenticacaoService _autenticacaoService;
     private readonly IHttpClientWrapper _httpClient;
 
     public Function() : this(null, null, null, null) { }
