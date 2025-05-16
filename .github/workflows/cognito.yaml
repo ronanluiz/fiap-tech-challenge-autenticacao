@@ -21,8 +21,8 @@ jobs:
   check-cognito:
     runs-on: ubuntu-latest
     outputs:
-      cognito_user_pool_id: ${{ steps.tf.outputs.cognito_user_pool_id }}
-      cognito_user_pool_client_id: ${{ steps.tf.outputs.cognito_user_pool_client_id }}
+      cognito_user_pool_id: ${{ steps.get-cognito-resources.outputs.cognito_user_pool_id }}
+      cognito_user_pool_client_id: ${{ steps.get-cognito-resources.outputs.cognito_user_pool_client_id }}
       resources_exist: ${{ steps.get-cognito-resources.outputs.resources_exist }}
     steps:
       - uses: actions/checkout@v4.2.2
