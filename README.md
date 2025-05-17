@@ -1,17 +1,3 @@
-## Compilação do projeto lambda
-
-Compile o projeto
-`dotnet build src/AutenticacaoFunction/src/AutenticacaoFunction/AutenticacaoFunction.csproj`
-
-Publique o projeto
-`dotnet publish src/AutenticacaoFunction/src/AutenticacaoFunction/AutenticacaoFunction.csproj -c Release -o ./publish`
-
-Compacte o conteúdo da pasta publish para um arquivo ZIP
-```
-zip -r lambda_function.zip ./publish/*
-mv lambda_function.zip ./terraform
-```
-
 # Serviço de autenticação
 
 Este repositório códigos fonte e scripts Terraform responsáveis por disponibilizar o serviço de autenticação do sistema de autoatendimento para uma lanchonete. Esse serviço foi construído para ser disponibilizado através de um AWS API Gateway que se integra com o serviço serveless AWS Lambda. A lamdba se integra com o serviço AWS RDS para validação de dados dos clientes e utiliza o AWS Cognito para complementar a validação no processo de autenticação.
@@ -19,6 +5,52 @@ Este repositório códigos fonte e scripts Terraform responsáveis por disponibi
 A infra do API Gateway, AWS Cognito e as configurações de de rede e segurança necessárias para acesso são criadas através de scripts Terraform. 
 
 O provisionamento da infraestrutura, construção e implantação da função AWS Lambda é realizada através de através de workflows do GitHub Actions.
+
+## Diagrama da Arquitetura
+```mermaid
+flowchart TD
+    System[Sistema Lanchonete] --> |HTTPS| ApiGateway[AWS API Gateway]
+    ApiGateway --> |Invoca| Lambda[AWS Lambda]
+    Lambda --> |Consulta| RDS[(AWS RDS PostgreSQL)]
+    Lambda <--> |Valida/registra autenticação| Cognito[AWS Cognito]
+
+    classDef aws fill:#FF9900,stroke:#232F3E,stroke-width:2px,color:white;
+    classDef user fill:#85B3DC,stroke:#3B78BC,stroke-width:2px,color:white;
+    
+    class ApiGateway,Lambda,RDS,Cognito aws;
+    class System system;
+```
+## Diagrama de Fluxo de CI/CD e Provisionamento
+
+```mermaid
+flowchart LR
+    subgraph GitHub
+        Code[Código Fonte] --> |Trigger| Actions[GitHub Actions]
+        Actions --> |Build| AppBuild[Build da Aplicação]
+        Actions --> |Deploy| TerraformDeploy[Deploy Terraform]
+    end
+
+    subgraph Terraform["Provisionamento Terraform"]
+        TerraformDeploy --> APIGatewayTF[API Gateway]
+        TerraformDeploy --> LambdaTF[Lambda]
+        TerraformDeploy --> CognitoTF[Cognito]
+    end
+
+    subgraph AWS["Infraestrutura AWS"]
+        APIGatewayTF --> |Provisiona| APIGatewayAWS[API Gateway]
+        LambdaTF --> |Provisiona| LambdaAWS[Lambda Function]
+        CognitoTF --> |Provisiona| CognitoAWS[Cognito]
+        AppBuild --> |Deploy| LambdaAWS
+    end
+
+    classDef github fill:#24292E,stroke:#24292E,stroke-width:2px,color:white;
+    classDef terraform fill:#5C4EE5,stroke:#5C4EE5,stroke-width:2px,color:white;
+    classDef aws fill:#FF9900,stroke:#232F3E,stroke-width:2px,color:white;
+    
+    class Code,Actions,AppBuild github;
+    class TerraformDeploy,APIGatewayTF,LambdaTF,CognitoTF,RDSTF terraform;
+    class APIGatewayAWS,LambdaAWS,CognitoAWS,RDSAWS aws;
+```
 
 ## Estrutura do Repositório
 
