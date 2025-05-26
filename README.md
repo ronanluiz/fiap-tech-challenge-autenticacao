@@ -2,24 +2,15 @@
 
 Este repositório códigos fonte e scripts Terraform responsáveis por disponibilizar o serviço de autenticação do sistema de autoatendimento para uma lanchonete. Esse serviço foi construído para ser disponibilizado através de um AWS API Gateway que se integra com o serviço serveless AWS Lambda. A lamdba se integra com o serviço AWS RDS para validação de dados dos clientes e utiliza o AWS Cognito para complementar a validação no processo de autenticação.
 
-A infra do API Gateway, AWS Cognito e as configurações de de rede e segurança necessárias para acesso são criadas através de scripts Terraform. 
+A infra do API Gateway, AWS Cognito e as configurações de de rede e segurança necessárias para acesso são criadas através de scripts Terraform.
 
 O provisionamento da infraestrutura, construção e implantação da função AWS Lambda é realizada através de através de workflows do GitHub Actions.
 
 ## Diagrama da Arquitetura
-```mermaid
-flowchart TD
-    System[Sistema Lanchonete] --> |HTTPS| ApiGateway[AWS API Gateway]
-    ApiGateway --> |Invoca| Lambda[AWS Lambda]
-    Lambda --> |Consulta| RDS[(AWS RDS PostgreSQL)]
-    Lambda <--> |Valida/registra autenticação| Cognito[AWS Cognito]
 
-    classDef aws fill:#FF9900,stroke:#232F3E,stroke-width:2px,color:white;
-    classDef user fill:#85B3DC,stroke:#3B78BC,stroke-width:2px,color:white;
-    
-    class ApiGateway,Lambda,RDS,Cognito aws;
-    class System system;
-```
+
+![](docs/assets/20250526_075911_image.png)
+
 ## Diagrama de Fluxo de CI/CD e Provisionamento
 
 ```mermaid
@@ -46,7 +37,7 @@ flowchart LR
     classDef github fill:#24292E,stroke:#24292E,stroke-width:2px,color:white;
     classDef terraform fill:#5C4EE5,stroke:#5C4EE5,stroke-width:2px,color:white;
     classDef aws fill:#FF9900,stroke:#232F3E,stroke-width:2px,color:white;
-    
+  
     class Code,Actions,AppBuild github;
     class TerraformDeploy,APIGatewayTF,LambdaTF,CognitoTF,RDSTF terraform;
     class APIGatewayAWS,LambdaAWS,CognitoAWS,RDSAWS aws;
@@ -86,13 +77,16 @@ Antes de executar os scripts Terraform localmente, certifique-se de ter instalad
 ## Configuração AWS
 
 No arquivo `~./aws/credentials` defina as credenciais em profile customizado:
+
 ```
 [default]
 aws_access_key_id=
 aws_secret_access_key=
 aws_session_token=
 ```
+
 Adicionei uma entrada no arquivo `~/.aws/config` para especificar a região padrão.
+
 ```
 [profile default]
 region = us-east-1
@@ -103,8 +97,7 @@ region = us-east-1
 O estado do Terraform é armazenado em um bucket S3 para garantir consistência e colaboração entre a equipe. Para configurar o backend:
 
 1. Conceda permissão ao arquivo setup.sh
-`chmod +x terraform/setup.sh`
-
+   `chmod +x terraform/setup.sh`
 2. Execute o script `setup.sh` para criar o bucket S3:
 
 ```bash
@@ -112,6 +105,7 @@ O estado do Terraform é armazenado em um bucket S3 para garantir consistência 
 ```
 
 Este script irá:
+
 - Criar o bucket S3 para armazenar o estado do Terraform (caso não exista)
 - Habilitar versionamento no bucket
 
@@ -121,7 +115,7 @@ Para executar os scripts Terraform localmente, siga os passos abaixo:
 
 ### Pré-requisitos
 
-- Os scripts dependem da VPC que é criada à partir do [repositório de infra](https://github.com/ronanluiz/fiap-tech-challenge-infra). 
+- Os scripts dependem da VPC que é criada à partir do [repositório de infra](https://github.com/ronanluiz/fiap-tech-challenge-infra).
 - A aplicação depende do banco de dados criado a partir do [repositório de banco de dados](https://github.com/ronanluiz/fiap-tech-challenge-bd).
 
 ### Inicialize o Terraform
@@ -190,6 +184,7 @@ terraform -chdir=terraform/cognito destroy
 # Para a Lambda
 terraform -chdir=terraform/lamdba destroy 
 ```
+
 ⚠ **Obs.:** Serão exigidas algumas informações como variáveis para execução dos scripts, porém, nesse processo não precisa preencher nada.
 
 Este comando remove todos os recursos criados pelo Terraform. Use com cautela, apenas quando realmente necessário.
@@ -197,21 +192,25 @@ Este comando remove todos os recursos criados pelo Terraform. Use com cautela, a
 ## Componentes da Infraestrutura
 
 ### AWS API Gateway
+
 Serviço gerenciado para criar, publicar e proteger APIs, facilitando a comunicação entre aplicações e serviços da AWS.
 
 ### AWS Lambda
+
 Serviço serverless que executa código em resposta a eventos, sem necessidade de gerenciamento de infraestrutura, cobrando apenas pelo tempo de execução.
 
 ### AWS Cognito
+
 Serviço para autenticação e gerenciamento de usuários em aplicações, oferecendo registro, login e controle de acesso com integração a provedores de identidade.
 
 ### Security Groups
 
-Os Security Groups controlam o tráfego de rede e permissões para os recursos AWS. 
+Os Security Groups controlam o tráfego de rede e permissões para os recursos AWS.
 
 ## GitHub Actions
 
 Este repositório utiliza GitHub Actions para automatizar o processo de implantação da infraestrutura. Os workflows estão definidos em `.github/workflows/` e incluem:
+
 - **build_lambda.yaml**: Responsável por fazer o build da função lambda e gerar o pacote para publicação.
 - **cognito.yaml**: Responsável por provisionar os recursos do serviço AWS Cognito caso seja necessário através dos commandos terraform.
 - **deploy_lambda.yaml**: Responsável por recuperar o pacote da aplicação lambda e provisionar os recursos do serviço AWS API Gateway e AWS Lamdba necessários para disponibilização da aplicação através dos commandos terraform.
@@ -220,6 +219,7 @@ Este repositório utiliza GitHub Actions para automatizar o processo de implanta
 Abaixo a lista de variáveis/secrets que precisam ser configurados no github (Settings -> Secrets and variables -> Actions) para que a execução ocorra com sucesso:
 
 **Secrets:**
+
 - AWS_ACCESS_KEY_ID
 - AWS_SECRET_ACCESS_KEY
 - AWS_SESSION_TOKEN
@@ -227,9 +227,10 @@ Abaixo a lista de variáveis/secrets que precisam ser configurados no github (Se
 - DB_NAME
 - DB_USERNAME
 - DB_PASSWORD
-- JWT_SECRET: Secret necessária para geração do token JWT que será gerado como resultado do serviço de autenticação. 
+- JWT_SECRET: Secret necessária para geração do token JWT que será gerado como resultado do serviço de autenticação.
 
-**Variables:** 
+**Variables:**
+
 - AWS_REGION
 
 ## Boas Práticas de Desenvolvimento
@@ -243,11 +244,12 @@ Abaixo a lista de variáveis/secrets que precisam ser configurados no github (Se
 
 ## Resolução de Problemas
 
-| Problema | Possível Solução |
-|----------|------------------|
-| Erro de acesso ao bucket S3 | Verifique suas credenciais AWS e permissões |
-| Conflito de estado | Verifique se outra pessoa está executando o Terraform simultaneamente ou se há necessidade de reconfigurar o estado (normalmente é resolvido utilizando o comando `terraform -chdir=terraform init -reconfigur`) |
-| Falha no GitHub Actions | Verifique os secrets configurados no repositório |
-| Falha ao realizar o `terraform destroy` | Verificar se não existe outro recurso criado que está referenciando um recurso criado através de scripts desse repositório. |
+
+| Problema                               | Possível Solução                                                                                                                                                                                                |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Erro de acesso ao bucket S3            | Verifique suas credenciais AWS e permissões                                                                                                                                                                       |
+| Conflito de estado                     | Verifique se outra pessoa está executando o Terraform simultaneamente ou se há necessidade de reconfigurar o estado (normalmente é resolvido utilizando o comando`terraform -chdir=terraform init -reconfigur`) |
+| Falha no GitHub Actions                | Verifique os secrets configurados no repositório                                                                                                                                                                  |
+| Falha ao realizar o`terraform destroy` | Verificar se não existe outro recurso criado que está referenciando um recurso criado através de scripts desse repositório.                                                                                    |
 
 Para problemas mais complexos, consulte a documentação oficial do [Terraform](https://www.terraform.io/docs/index.html) e da [AWS](https://docs.aws.amazon.com/).

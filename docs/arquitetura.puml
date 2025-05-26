@@ -1,0 +1,24 @@
+@startuml AWS Architecture Context Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title "Autenticação - AWS com API Gateway, Lambda, RDS PostgreSQL, e Cognito"
+
+LAYOUT_LANDSCAPE()
+
+Person(user, "Usuário", "Usuário da aplicação")
+Container(app, "Sistema Lanchonete", "C#, .Net 8", "Sistema da lanchonete de autoatendimento")
+
+System_Boundary(aws, "AWS") {
+    System_Ext(api_gateway, "API Gateway", "Gerencia endpoints de API e roteamento")
+    Container(lambda, "AWS Lambda", "Função serverless com regras de autenticação")
+    SystemDb(rds, "AWS RDS PostgreSQL", "Banco de dados para dados da aplicação")
+    System_Ext(cognito, "AWS Cognito", "Serviço de autenticação")
+}
+
+Rel_D(user, app, "Solicita autenticação", "HTTPS")
+Rel(app, api_gateway, "Faz requisições à API", "HTTPS")
+Rel_U(api_gateway, lambda, "Encaminha requisições para", "Integração AWS")
+Rel(lambda, rds, "Consulta dados de", "SQL sobre TLS")
+Rel(lambda, cognito, "Valida/registra autenticação", "AWS SDK")
+
+@enduml
