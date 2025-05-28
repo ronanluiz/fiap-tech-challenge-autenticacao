@@ -1,6 +1,8 @@
 # variables.tf
 locals {
-  project = "${var.environment}-tc-autenticacao"
+  project                = "${var.environment}-${var.project_name}"
+  vpc_name               = "${var.environment}-vpc"
+  db_instance_identifier = "${var.environment}-tc-bd"
 }
 
 variable "region" {
@@ -15,21 +17,12 @@ variable "environment" {
   default     = "dev"
 }
 
-variable "db_name" {
-  type = string
-}
-
 variable "db_username" {
   type = string
 }
 
 variable "db_password" {
   type = string
-}
-
-variable "db_host" {
-  type      = string
-  sensitive = true
 }
 
 variable "cognito_user_pool_id" {
@@ -66,4 +59,9 @@ variable "aws_secret_access_key" {
 variable "aws_session_token" {
   type      = string
   sensitive = true
+}
+
+variable "project_name" {
+  type    = string
+  default = "tc-autenticacao"
 }

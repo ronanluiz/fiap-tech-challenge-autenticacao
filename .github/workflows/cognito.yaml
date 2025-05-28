@@ -12,10 +12,13 @@ on:
       cognito_user_pool_client_id:
         value: ${{ jobs.terraform.outputs.cognito_user_pool_client_id || jobs.check-cognito.outputs.cognito_user_pool_client_id }}
 env:
-  TF_VAR_environment: ${{ inputs.environment }}
-  TERRAFORM_DIR: terraform/cognito
+  TERRAFORM_DIR: "terraform/env/${{ inputs.environment }}/cognito"
+  ENABLE_PLAN: ${{ github.event_name == 'pull_request' || github.ref_name == 'develop' }}
+  ENABLE_APPLY: ${{ (github.ref_name == 'main' || github.ref_name == 'develop') && github.event_name == 'push' }}
+  IS_PULL_REQUEST: ${{ github.event_name == 'pull_request' }}
   COGNITO_USER_POOL_NAME: "${{ inputs.environment }}-tc-cognito-user-pool"
   COGNITO_CLIENT_NAME: "${{ inputs.environment }}-tc-cognito-user-pool-client"
+  TF_VAR_environment: ${{ inputs.environment }}
 
 jobs:
   check-cognito:
@@ -132,13 +135,13 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        if: github.event_name == 'pull_request' || github.ref_name == 'develop'
+        if: ${{ env.ENABLE_PLAN == 'true' }}
         run: terraform -chdir=$TERRAFORM_DIR plan -no-color -input=false
         continue-on-error: true
 
       - name: Update Pull Request
         uses: actions/github-script@v7
-        if: github.event_name == 'pull_request'
+        if: ${{ env.IS_PULL_REQUEST == 'true' }}
         env:
           PLAN: ${{ steps.plan.outputs.stdout }}
         with:
@@ -170,7 +173,7 @@ jobs:
         run: exit 1
 
       - name: Terraform Apply
-        if: (github.ref_name == 'main' || github.ref_name == 'develop') && github.event_name == 'push'
+        if: ${{ env.ENABLE_APPLY == 'true' }}
         run: terraform -chdir=$TERRAFORM_DIR apply -auto-approve -input=false
       
       - name: Export Terraform outputs
@@ -178,4 +181,4 @@ jobs:
         run: |
           echo "cognito_user_pool_id=$(terraform output -raw cognito_user_pool_id)" >> $GITHUB_OUTPUT
           echo "cognito_user_pool_client_id=$(terraform output -raw cognito_user_pool_client_id)" >> $GITHUB_OUTPUT
-        working-directory: ./terraform/cognito
+        working-directory: ./${{ env.TERRAFORM_DIR }}

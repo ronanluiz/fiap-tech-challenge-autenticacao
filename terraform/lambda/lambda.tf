@@ -11,8 +11,8 @@ resource "aws_lambda_function" "autenticacao_lambda" {
 
   environment {
     variables = {
-      BD_HOST                       = var.db_host
-      BD_NOME                       = var.db_name
+      BD_HOST                       = data.aws_db_instance.database.address
+      BD_NOME                       = data.aws_db_instance.database.db_name
       BD_USUARIO                    = var.db_username
       BD_SENHA                      = var.db_password
       COGNITO_USER_POOL_ID          = var.cognito_user_pool_id

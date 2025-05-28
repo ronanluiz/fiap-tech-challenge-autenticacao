@@ -1,6 +1,6 @@
 # variables.tf
 locals {
-  project = "${var.environment}-tc-cognito"
+  project = "${var.environment}-${var.project_name}"
 }
 
 variable "region" {
@@ -13,6 +13,11 @@ variable "environment" {
   description = "Ambiente no qual o projeto será implantado"
   type        = string
   default     = "dev"
+}
+
+variable "project_name" {
+  type    = string
+  default = "tc-cognito"
 }
 
 
