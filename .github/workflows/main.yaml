@@ -1,9 +1,7 @@
 name: Build lambda authentication
 on:
     push:
-      branches: [ develop ]   # Aceita push em qualquer branch
-    pull_request:
-
+      branches: [ main, develop ]
 env:
   PROJECT_PATH: src/AutenticacaoFunction/src/AutenticacaoFunction
   ENVIRONMENT: ${{ (github.ref_name == 'main' || github.event_name == 'pull_request') && 'prod' || 'dev' }}
@@ -16,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ env.ENVIRONMENT }}
+      enable_plan: ${{ env.ENABLE_PLAN }}
+      enable_apply: ${{ env.ENABLE_APPLY }}
+      is_pull_request: ${{ env.IS_PULL_REQUEST }}
     steps:
       - name: Set outputs
         run: echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
@@ -30,6 +31,9 @@ jobs:
     secrets: inherit
     with:
       environment: ${{ needs.setup.outputs.environment }} 
+      enable_plan: ${{ needs.setup.outputs.enable_plan }}
+      enable_apply: ${{ needs.setup.outputs.enable_apply }}
+      is_pull_request: ${{ needs.setup.outputs.is_pull_request }}
   
   deploy_lambda:
       needs: [setup, cognito]
@@ -39,3 +43,6 @@ jobs:
         environment: ${{ needs.setup.outputs.environment }} 
         cognito_user_pool_id: ${{ needs.cognito.outputs.cognito_user_pool_id }}
         cognito_user_pool_client_id: ${{ needs.cognito.outputs.cognito_user_pool_client_id }}     
+        enable_plan: ${{ needs.setup.outputs.enable_plan }}
+        enable_apply: ${{ needs.setup.outputs.enable_apply }}
+        is_pull_request: ${{ needs.setup.outputs.is_pull_request }}
