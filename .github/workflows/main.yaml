@@ -32,7 +32,7 @@ jobs:
       environment: ${{ needs.setup.outputs.environment }} 
   
   deploy_lambda:
-      needs: cognito
+      needs: [setup, cognito]
       uses: ./.github/workflows/deploy_lambda.yaml
       secrets: inherit
       with:
