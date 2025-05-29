@@ -1,0 +1,52 @@
+name: "Destroy infra"
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: Environment
+        options: 
+        - dev
+        - prod 
+env:
+  TERRAFORM_LAMBDA_PATH: "terraform/env/${{ inputs.environment }}/lambda"
+  TERRAFORM_COGINITO_PATH: "terraform/env/${{ inputs.environment }}/cognito"
+  TF_VAR_db_username: "" 
+  TF_VAR_db_password: ""
+  TF_VAR_cognito_user_pool_id: ""
+  TF_VAR_cognito_user_pool_client_id: ""
+  TF_VAR_jwt_secret: ""
+  TF_VAR_aws_access_key_id: "" 
+  TF_VAR_aws_secret_access_key: ""
+  TF_VAR_aws_session_token: ""
+
+jobs:
+  destroi_infra:
+    runs-on: ubuntu-latest
+    steps:      
+      - uses: actions/checkout@v4.2.2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.11.3"
+
+      - name: Terraform Init
+        id: init
+        run: |
+          terraform -chdir=$TERRAFORM_LAMBDA_PATH init
+          terraform -chdir=$TERRAFORM_COGINITO_PATH init
+        
+      - name: Terraform destroy
+        run: |
+          terraform -chdir=$TERRAFORM_LAMBDA_PATH destroy -auto-approve
+          terraform -chdir=$TERRAFORM_COGINITO_PATH destroy -auto-approve
+      
+      
