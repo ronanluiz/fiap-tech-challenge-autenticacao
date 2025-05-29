@@ -1,0 +1,190 @@
+name: Build cognito infrastructure
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      enable_plan:
+        required: true
+        type: string
+      enable_apply:
+        required: true
+        type: string
+      is_pull_request:
+        required: true
+        type: string
+    outputs:
+      cognito_user_pool_id:        
+        value: ${{ jobs.terraform.outputs.cognito_user_pool_id || jobs.check-cognito.outputs.cognito_user_pool_id }}
+      cognito_user_pool_client_id:
+        value: ${{ jobs.terraform.outputs.cognito_user_pool_client_id || jobs.check-cognito.outputs.cognito_user_pool_client_id }}
+env:
+  TERRAFORM_DIR: "terraform/env/${{ inputs.environment }}/cognito"
+  COGNITO_USER_POOL_NAME: "${{ inputs.environment }}-tc-cognito-user-pool"
+  COGNITO_CLIENT_NAME: "${{ inputs.environment }}-tc-cognito-user-pool-client"
+  TF_VAR_environment: ${{ inputs.environment }}
+
+jobs:
+  check-cognito:
+    runs-on: ubuntu-latest
+    outputs:
+      cognito_user_pool_id: ${{ steps.get-cognito-resources.outputs.user_pool_id }}
+      cognito_user_pool_client_id: ${{ steps.get-cognito-resources.outputs.client_id }}
+      resources_exist: ${{ steps.get-cognito-resources.outputs.resources_exist }}
+    steps:
+      - uses: actions/checkout@v4.2.2
+      
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      
+      - name: Check cognito resources
+        id: get-cognito-resources
+        run: |
+          # Verifica se o User Pool existe
+          USER_POOLS=$(aws cognito-idp list-user-pools --max-results 60 | jq -r '.UserPools[] | select(.Name=="${{ env.COGNITO_USER_POOL_NAME }}") | .Id')
+          
+          if [ -n "$USER_POOLS" ]; then
+            echo "User Pool encontrado: $USER_POOLS"
+            USER_POOL_ID=$USER_POOLS
+            
+            # Verifica se existe o Client para este User Pool
+            CLIENTS=$(aws cognito-idp list-user-pool-clients --user-pool-id $USER_POOL_ID | jq -r '.UserPoolClients[] | select(.ClientName=="${{ env.COGNITO_CLIENT_NAME }}") | .ClientId')
+            
+            if [ -n "$CLIENTS" ]; then
+              echo "Client ID encontrado: $CLIENTS"
+              CLIENT_ID=$CLIENTS
+              echo "resources_exist=true" >> $GITHUB_OUTPUT
+              echo "user_pool_id=$USER_POOL_ID" >> $GITHUB_OUTPUT
+              echo "client_id=$CLIENT_ID" >> $GITHUB_OUTPUT
+            else
+              echo "Client não encontrado para o User Pool $USER_POOL_ID"
+              echo "resources_exist=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "User Pool não encontrado"
+            echo "resources_exist=false" >> $GITHUB_OUTPUT
+          fi       
+
+  terraform:
+    needs: check-cognito
+    if: needs.check-cognito.outputs.resources_exist == 'false'
+    runs-on: ubuntu-latest
+    outputs:
+      cognito_user_pool_id: ${{ steps.tf.outputs.cognito_user_pool_id }}
+      cognito_user_pool_client_id: ${{ steps.tf.outputs.cognito_user_pool_client_id }}
+    steps:
+      - uses: actions/checkout@v4.2.2
+      
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      
+      - name: Check cognito resources
+        id: get-cognito-resources
+        run: |
+          # Verifica se o User Pool existe
+          USER_POOLS=$(aws cognito-idp list-user-pools --max-results 60 | jq -r '.UserPools[] | select(.Name=="${{ env.COGNITO_USER_POOL_NAME }}") | .Id')
+          
+          if [ -n "$USER_POOLS" ]; then
+            echo "User Pool encontrado: $USER_POOLS"
+            USER_POOL_ID=$USER_POOLS
+            
+            # Verifica se existe o Client para este User Pool
+            CLIENTS=$(aws cognito-idp list-user-pool-clients --user-pool-id $USER_POOL_ID | jq -r '.UserPoolClients[] | select(.ClientName=="${{ env.COGNITO_CLIENT_NAME }}") | .ClientId')
+            
+            if [ -n "$CLIENTS" ]; then
+              echo "Client ID encontrado: $CLIENTS"
+              CLIENT_ID=$CLIENTS
+              echo "resources_exist=true" >> $GITHUB_OUTPUT
+              echo "user_pool_id=$USER_POOL_ID" >> $GITHUB_OUTPUT
+              echo "client_id=$CLIENT_ID" >> $GITHUB_OUTPUT
+            else
+              echo "Client não encontrado para o User Pool $USER_POOL_ID"
+              echo "resources_exist=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "User Pool não encontrado"
+            echo "resources_exist=false" >> $GITHUB_OUTPUT
+          fi
+        
+      - name: Setup prerequisites for Terraform
+        run: ./terraform/setup.sh
+
+      - name: Setup do Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.11.3"
+          terraform_wrapper: false # Configuração para permiter acesso aos outputs do terraform
+
+      - name: Terraform Format
+        id: fmt
+        run: terraform -chdir=$TERRAFORM_DIR fmt -check
+
+      - name: Terraform Init
+        id: init
+        run: terraform -chdir=$TERRAFORM_DIR init
+      
+      - name: Terraform Validate
+        id: validate
+        run: terraform -chdir=$TERRAFORM_DIR validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        if: ${{ inputs.enable_plan == 'true' }}
+        run: terraform -chdir=$TERRAFORM_DIR plan -no-color -input=false
+        continue-on-error: true
+
+      - name: Update Pull Request
+        uses: actions/github-script@v7
+        if: ${{ inputs.is_pull_request == 'true' }}
+        env:
+          PLAN: ${{ steps.plan.outputs.stdout }}
+        with:
+          script: |
+            const output = `#### Terraform - Formatação e Estilo 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Init ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validação 🤖\`${{ steps.validate.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+            <details><summary>Detalhes do Terraform Plan</summary>
+
+            \`\`\`terraform\n
+            ${process.env.PLAN}
+            \`\`\`
+
+            </details>
+
+            *Enviado por: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      - name: Terraform Apply
+        if: ${{ inputs.enable_apply == 'true' }}
+        run: terraform -chdir=$TERRAFORM_DIR apply -auto-approve -input=false
+      
+      - name: Export Terraform outputs
+        id: tf
+        run: |
+          echo "cognito_user_pool_id=$(terraform output -raw cognito_user_pool_id)" >> $GITHUB_OUTPUT
+          echo "cognito_user_pool_client_id=$(terraform output -raw cognito_user_pool_client_id)" >> $GITHUB_OUTPUT
+        working-directory: ./${{ env.TERRAFORM_DIR }}
