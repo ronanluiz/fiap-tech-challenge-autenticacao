@@ -2,6 +2,9 @@ name: Build lambda authentication
 on:
     push:
       branches: [ main, develop ]
+      paths:
+        - 'src/**'
+        - 'terraform/**'
 env:
   PROJECT_PATH: src/AutenticacaoFunction/src/AutenticacaoFunction
   ENVIRONMENT: ${{ (github.ref_name == 'main' || github.event_name == 'pull_request') && 'prod' || 'dev' }}
