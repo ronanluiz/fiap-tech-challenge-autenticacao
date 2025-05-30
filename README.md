@@ -50,6 +50,7 @@ flowchart LR
 │   └── workflows/   # Workflows do GitHub Actions
 ├── src/             # Código da função AWS Lambda
 ├── terraform/       # Scripts Terraform
+│   ├── env/         # Sripts com configurações por ambiente (dev/prod)
 │   ├── congnito/    # Scripts Terraform responsáveis pela construção dos compontes do AWS Cognito
 │   ├── lambda/      # Scripts Terraform responsáveis pela construção dos compontes do AWS Lambda, API Gateway e suas dependências
 ```
@@ -122,9 +123,9 @@ Para executar os scripts Terraform localmente, siga os passos abaixo:
 
 ```bash
 # Para o Cognito
-terraform -chdir=terraform/cognito init
+terraform -chdir=terraform/env/dev/cognito init
 # Para a Lambda
-terraform -chdir=terraform/lambda init
+terraform -chdir=terraform/env/dev/lambda init
 ```
 
 Este comando inicializa o diretório de trabalho do Terraform, baixa os provedores necessários e configura o backend S3.
@@ -133,9 +134,9 @@ Este comando inicializa o diretório de trabalho do Terraform, baixa os provedor
 
 ```bash
 # Para o Cognito
-terraform -chdir=terraform/cognito validate
+terraform -chdir=terraform/env/dev/cognito validate
 # Para a Lambda
-terraform -chdir=terraform/lambda validate
+terraform -chdir=terraform/env/dev/lambda validate
 ```
 
 Este comando verifica se a configuração está sintaticamente correta e internamente consistente.
@@ -152,9 +153,9 @@ Este comando organiza a formatação dos scripts nos arquivos padronizando princ
 
 ```bash
 # Para o Cognito
-terraform -chdir=terraform/cognito plan -out=tfplan
+terraform -chdir=terraform/env/dev/cognito plan -out=tfplan
 # Para a Lambda
-terraform -chdir=terraform/lambda plan -out=tfplan
+terraform -chdir=terraform/env/dev/lambda plan -out=tfplan
 ```
 
 ⚠ **Obs.:** Serão exigidas algumas informações como variáveis para execução dos scripts.
@@ -165,13 +166,13 @@ Este comando cria um plano de execução e salva no arquivo `tfplan`. Revise cui
 
 ```bash
 # Para o Cognito
-terraform -chdir=terraform/cognito apply tfplan
+terraform -chdir=terraform/env/dev/cognito apply tfplan
 # Para a Lambda
-terraform -chdir=terraform/lambda apply tfplan
+terraform -chdir=terraform/env/dev/lambda apply tfplan
 
 # Para execução automática se ter necessidade de aprovação
-terraform -chdir=terraform/coginito apply tfplan -auto-approve
-terraform -chdir=terraform/lambda apply tfplan -auto-approve
+terraform -chdir=terraform/env/dev/coginito apply tfplan -auto-approve
+terraform -chdir=terraform/env/dev/lambda apply tfplan -auto-approve
 ```
 
 Este comando aplica as alterações planejadas na infraestrutura AWS.
@@ -180,9 +181,9 @@ Este comando aplica as alterações planejadas na infraestrutura AWS.
 
 ```bash
 # Para o Cognito
-terraform -chdir=terraform/cognito destroy  
+terraform -chdir=terraform/env/dev/cognito destroy  
 # Para a Lambda
-terraform -chdir=terraform/lamdba destroy 
+terraform -chdir=terraform/env/dev/lamdba destroy 
 ```
 
 ⚠ **Obs.:** Serão exigidas algumas informações como variáveis para execução dos scripts, porém, nesse processo não precisa preencher nada.
@@ -223,8 +224,6 @@ Abaixo a lista de variáveis/secrets que precisam ser configurados no github (Se
 - AWS_ACCESS_KEY_ID
 - AWS_SECRET_ACCESS_KEY
 - AWS_SESSION_TOKEN
-- BD_HOST
-- DB_NAME
 - DB_USERNAME
 - DB_PASSWORD
 - JWT_SECRET: Secret necessária para geração do token JWT que será gerado como resultado do serviço de autenticação.
