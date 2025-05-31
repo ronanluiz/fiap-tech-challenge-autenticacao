@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Criação do bucket S3 para manutenção se estado dos recursos
-BUCKET_NAME="soat10-tech-challenge-fase3"
+BUCKET_NAME="fiap-soat10-tc-fase3-0525"
 REGION="us-east-1"
 
 if aws s3api head-bucket --bucket $BUCKET_NAME --region $REGION 2>/dev/null; then
